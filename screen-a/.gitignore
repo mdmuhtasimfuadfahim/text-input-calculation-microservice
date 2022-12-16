@@ -1,0 +1,24 @@
+# Dependencies
+node_modules
+
+# yarn error logs
+yarn-error.log
+
+# yarn lock
+yarn.lock
+
+# Environment varibales
+.env*
+!.env*.example
+
+# Code coverage
+coverage
+
+# package lock file
+package-lock.json
+
+# upload
+uploads
+
+# log file
+rabbitmq.log

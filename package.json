@@ -1,0 +1,29 @@
+{
+  "name": "text-input-calculation-microservice",
+  "version": "1.7.0",
+  "description": "This app calculates received text and .txt file as input and give results",
+  "main": "src/index.js",
+  "repository": "https://github.com/mdmuhtasimfuadfahim/text-input-calculation-microservice.git",
+  "author": "Md. Muhtasim Fuad Fahim <muhtasim.fahim.98@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.12.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "reset": "pm2 stop all",
+    "redis": "redis-server",
+    "docker": "docker run -p 5672:5672 rabbitmq",
+    "start": "concurrently \"npm run reset\" \"npm run redis\" \"npm run docker\" \"npm run service:*\"",
+    "service:screen-a": "npm start --prefix screen-a",
+    "service:screen-b": "npm start --prefix screen-b",
+    "service:gateway": "npm start --prefix gateway"
+  },
+  "bugs": {
+    "url": "https://github.com/mdmuhtasimfuadfahim/text-input-calculation-microservice/issues"
+  },
+  "homepage": "https://github.com/mdmuhtasimfuadfahim/text-input-calculation-microservice#readme",
+  "dependencies": {
+    "pm2": "^5.2.0"
+  }
+}

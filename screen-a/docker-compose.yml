@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  node-app:
+    build: .
+    image: node-app
+    environment:
+      - MONGODB_URL=mongodb+srv://muhtasimfahim:6mJwFcDliFc0HdVb@cluster0.g0ayjjw.mongodb.net/?retryWrites=true&w=majority
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - .:/usr/src/node-app
+    networks:
+      - node-network
+
+  mongodb:
+    image: mongo:4.2.1-bionic
+    ports:
+      - '27017:27017'
+    volumes:
+      - dbdata:/data/db
+    networks:
+      - node-network
+
+volumes:
+  dbdata:
+
+networks:
+  node-network:
+    driver: bridge

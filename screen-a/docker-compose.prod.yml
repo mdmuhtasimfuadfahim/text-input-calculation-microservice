@@ -1,0 +1,6 @@
+version: '3'
+
+services:
+  node-app:
+    container_name: text-calculation-prod
+    command: yarn start

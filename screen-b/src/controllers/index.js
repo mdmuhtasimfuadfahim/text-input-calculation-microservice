@@ -1,0 +1,1 @@
+module.exports.resultController = require('./result.controller');
