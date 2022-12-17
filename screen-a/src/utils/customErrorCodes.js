@@ -2,6 +2,7 @@
 const errorCode = {
     "0": "UnknownError",
     "801": "InputServeError",
+    "802": "TextServeError",
     "1001": "TextFileError",
     "1010": "QueryInputsError",
     "1011": "QueryOutputsError",

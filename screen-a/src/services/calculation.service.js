@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const { Input, Output } = require('../models');
 const { status } = require('../config/status');
 const redisHelper = require('./redis.service');
+const wait15seconds = require('./delay.service');
 const ApiError = require('../utils/ApiError');
 const PublishEvent = require('../messagebroker/PublishEvent');
 const RegisteredTopics = require('../messagebroker/config/RegisteredTopic');
@@ -34,25 +35,44 @@ const RegisteredTopics = require('../messagebroker/config/RegisteredTopic');
   });
 };
 
+
 /**
  * Take input and give calculation output
- * @param {String} text
- * @param {File} file
- * @returns {Result<Calculation>}
+ * @param {Object} data
+ * @returns {Promise<Output>}
  */
-const inputServe = async (text, file) => {
-  try {
-    const input = await createInput(text, file.filename);
-    let output;
+const txtInputcalculation = async (data) => {
+  let input;
+  let output;
 
-    if(file.mimetype !== 'text/plain') {
+  if(data.file !== undefined) {
+    input = await createInput(data.text, data.file.filename);
+    if(data.file.mimetype !== 'text/plain') {
       output = await createOutput(input._id, 'Only .txt files are allowed', status[2]);
       throw new ApiError(1001, output.result);
     } else {
       output = await createOutput(input._id, 'This is the output', status[0]);
     }
+  } else {
+    input = await createInput(data.text);
+    output = await createOutput(input._id, 'This is the output', status[0]);
+  }
 
-    return { input: input.text, output: output.result };
+  return { input: input.text, output: output.result };
+};
+
+
+/**
+ * Take input and give calculation output
+ * @param {String} text
+ * @param {File} file
+ * @returns {Promise<Output>}
+ */
+const inputServe = async (text, file) => {
+  try {
+    const data = { text: text, file: file};
+    const result = await txtInputcalculation(data).then(await wait15seconds(3000));
+    return result;
   } catch (error) {
     throw new ApiError(801, error.message);
   }
@@ -61,15 +81,16 @@ const inputServe = async (text, file) => {
 /**
  * Take input and give calculation output
  * @param {String} text
- * @returns {Result<Calculation>}
+ * @returns {Promise<Output>}
  */
  const textServe = async (req) => {
-  console.log(req.file)
-  console.log(req.body.text)
-  // if (await User.isEmailTaken(userBody.email)) {
-  //   throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
-  // }
-  // return User.create(userBody);
+  try {
+    const data = { text: text };
+    const result = await txtInputcalculation(data).then(await wait15seconds(3000));
+    return result;
+  } catch (error) {
+    throw new ApiError(802, error.message);
+  }
 };
 
 /**
@@ -151,6 +172,9 @@ const getOutputByUUID = async (uuid) => {
 
 
 module.exports = {
+  createInput,
+  createOutput,
+  txtInputcalculation,
   inputServe,
   textServe,
   queryInputs,
