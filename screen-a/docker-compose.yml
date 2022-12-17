@@ -5,7 +5,7 @@ services:
     build: .
     image: node-app
     environment:
-      - MONGODB_URL=mongodb+srv://muhtasimfahim:6mJwFcDliFc0HdVb@cluster0.g0ayjjw.mongodb.net/?retryWrites=true&w=majority
+      - MONGODB_URL=mongodb+srv://${MONGODB_USERNAME}:{MONGODB_PASSWORD}@cluster0.g0ayjjw.mongodb.net/?retryWrites=true&w=majority
     ports:
       - '3000:3000'
     depends_on:

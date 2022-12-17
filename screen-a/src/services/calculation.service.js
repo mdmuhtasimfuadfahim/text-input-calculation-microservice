@@ -1,10 +1,11 @@
-const httpStatus = require('http-status');
 const { Input, Output } = require('../models');
 const { status } = require('../config/status');
+const fileOperation = require('./file.service');
 const redisHelper = require('./redis.service');
 const ApiError = require('../utils/ApiError');
 const PublishEvent = require('../messagebroker/PublishEvent');
 const RegisteredTopics = require('../messagebroker/config/RegisteredTopic');
+const console = require('console');
 
 /**
  * Create Input
@@ -13,10 +14,14 @@ const RegisteredTopics = require('../messagebroker/config/RegisteredTopic');
  * @returns {Promise<Input>}
  */
  const createInput = async (text, fileName) => {
-  return Input.create({
-    text,
-    file_path: '/uploads/' + fileName,
-  });
+  try {
+    return Input.create({
+      text,
+      file_path: '/uploads/' + fileName,
+    });
+  } catch (error) {
+    throw new ApiError(2001, error.message);
+  }
 };
 
 /**
@@ -27,32 +32,96 @@ const RegisteredTopics = require('../messagebroker/config/RegisteredTopic');
  * @returns {Promise<Output>}
  */
  const createOutput = async (id, result, status) => {
-  return Output.create({
-    ref_id: id,
-    result: result,
-    type: status,
-  });
+  try {
+    return Output.create({
+      ref_id: id,
+      result: result,
+      type: status,
+    });
+  } catch (error) {
+    throw new ApiError(2002, error.message);
+  }
 };
+
+
+/**
+ * Create Output
+ * @param {ObjectId} id
+ * @param {number} ms // delay in milliseconds
+ * @param {String} data
+ * @returns {Promise<CalculationResult>}
+ */
+const calculateOutput = async (id, data, ms) => {
+  try {
+    var start = new Date().getTime(); // calculation start time
+    var end = start; // calculation end time
+    let calculationResult;
+    while(end < start + ms) {
+      if(data === '') {
+        calculationResult = '0';
+      } else {
+        // calculation goes here
+        calculationResult = data;
+      }
+      end = new Date().getTime();
+    }
+    return await createOutput(id, calculationResult, status[0]);
+  } catch (error) {
+    throw new ApiError(2004, error.message);
+  }
+};
+
+
+/**
+ * Take input and give calculation output
+ * @param {Object} data
+ * @returns {Promise<Output>}
+ */
+const txtInputCalculation = async (data) => {
+  try {
+    let input;
+    let output;
+
+    if(data.file !== undefined) {
+      input = await createInput(data.text, data.file.filename);
+      if(data.file.mimetype === 'text/plain' 
+        // || data.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+        // || data.file.mimetype === 'application/msword' 
+        // || data.file.mimetype === 'application/pdf'
+      ) {
+        const fileData = await fileOperation(data.file);
+        if(fileData === 3001) {
+          output = await createOutput(input._id, 'File Data are not Valid', status[2]);
+          throw new ApiError(1001, output.result);
+        } else {
+          output = await calculateOutput(input._id, fileData, 3000);
+        }
+      } else {
+        output = await createOutput(input._id, 'Only .txt files are allowed', status[2]);
+        throw new ApiError(1001, output.result);
+      }
+    } else {
+      input = await createInput(data.text);
+      output = await calculateOutput(input._id, '', 3000);
+    }
+    return { input: input.text, output: output.result };
+  } catch (error) {
+    throw new ApiError(2003, error.message);
+  }
+};
+
 
 /**
  * Take input and give calculation output
  * @param {String} text
  * @param {File} file
- * @returns {Result<Calculation>}
+ * @returns {Promise<Output>}
  */
 const inputServe = async (text, file) => {
   try {
-    const input = await createInput(text, file.filename);
-    let output;
-
-    if(file.mimetype !== 'text/plain') {
-      output = await createOutput(input._id, 'Only .txt files are allowed', status[2]);
-      throw new ApiError(1001, output.result);
-    } else {
-      output = await createOutput(input._id, 'This is the output', status[0]);
-    }
-
-    return { input: input.text, output: output.result };
+    const data = { text: text, file: file};
+    const result = await txtInputCalculation(data);
+    return result;
   } catch (error) {
     throw new ApiError(801, error.message);
   }
@@ -61,15 +130,16 @@ const inputServe = async (text, file) => {
 /**
  * Take input and give calculation output
  * @param {String} text
- * @returns {Result<Calculation>}
+ * @returns {Promise<Output>}
  */
  const textServe = async (req) => {
-  console.log(req.file)
-  console.log(req.body.text)
-  // if (await User.isEmailTaken(userBody.email)) {
-  //   throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
-  // }
-  // return User.create(userBody);
+  try {
+    const data = { text: text };
+    const result = await txtInputCalculation(data);
+    return result;
+  } catch (error) {
+    throw new ApiError(802, error.message);
+  }
 };
 
 /**
@@ -151,6 +221,10 @@ const getOutputByUUID = async (uuid) => {
 
 
 module.exports = {
+  createInput,
+  createOutput,
+  calculateOutput,
+  txtInputCalculation,
   inputServe,
   textServe,
   queryInputs,

@@ -26,7 +26,6 @@ const getInput = {
 const getOutputs = {
   query: Joi.object().keys({
     ref_id: Joi.custom(objectId),
-    input_uuid: Joi.string(),
     result: Joi.string(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
