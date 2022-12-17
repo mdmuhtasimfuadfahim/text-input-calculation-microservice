@@ -23,6 +23,6 @@ const redisHelper = async function getSetCache(key, cb) {
         return reject(error);
     }
   })
-}
+};
 
 module.exports = redisHelper;

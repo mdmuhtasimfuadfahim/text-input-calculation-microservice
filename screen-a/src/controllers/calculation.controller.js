@@ -12,7 +12,7 @@ const input = catchAsync(async (req, res) => {
     } else {
       if(req.file !== null) {
         const data = await calculationService.inputServe(req.body.text, req.file);
-        if (data === null) res.status(httpStatus.OK).send(success([], 'Error Happened'));
+        if (data === undefined) res.status(httpStatus.OK).send(success([], 'Error Happened'));
         else res.status(httpStatus.OK).send(success(data, 'Calculation is Mathematically Valid'));
       } else {
         const data = await calculationService.textServe(req.body.text);
@@ -37,7 +37,7 @@ const getInput = catchAsync(async (req, res) => {
 });
 
 const getOutputs = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['ref_id', 'input_uuid', 'result']);
+  const filter = pick(req.query, ['ref_id', 'result']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const outputs = await calculationService.queryOutputs(filter, options);
   if (!outputs) throw new ApiError(httpStatus.NOT_FOUND, 'Nothing Found');
