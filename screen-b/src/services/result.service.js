@@ -10,7 +10,7 @@ const { callScreenA } = require('./screen-a.service');
 const getInputByUUID = async (uuid) => {
   try {
     const input = await callScreenA(`/input/${uuid}`, {}, 'GET');
-    return input;
+    return input.data;
   } catch (error) {
     throw new ApiError(1012, error.message);
   }
@@ -24,7 +24,7 @@ const getInputByUUID = async (uuid) => {
 const getOutputByUUID = async (uuid) => {
   try {
     const output = await callScreenA(`/output/${uuid}`, {}, 'GET');;
-    return output;
+    return output.data;
   } catch (error) {
     throw new ApiError(1013, error.message);
   }

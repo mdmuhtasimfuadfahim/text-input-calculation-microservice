@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { Input, Output } = require('../models');
 const { status } = require('../config/status');
 const fileOperation = require('./file.service');
@@ -154,7 +155,7 @@ const txtInputCalculation = async (data) => {
           output = await createOutput(input._id, 'File Data are not Valid', status[2]);
           throw new ApiError(1001, output.result);
         } else {
-          output = await calculateOutput(input._id, fileData, 1000);
+          output = await calculateOutput(input._id, fileData, 15000);
         }
       } else {
         output = await createOutput(input._id, 'Only .txt files are allowed', status[2]);
@@ -162,9 +163,11 @@ const txtInputCalculation = async (data) => {
       }
     } else {
       input = await createInput(data.text);
-      output = await calculateOutput(input._id, '', 1000);
+      output = await calculateOutput(input._id, '', 15000);
     }
-    return { input: input.text, output: output.result };
+    const fileInfo = fs.readFileSync(`.${input.file_path}`, 'utf-8');
+    await PublishEvent(RegisteredTopics.CALCULATION_RESULT, { inputTitle: input.text, fileData: fileInfo, result: output.result });
+    return { inputTitle: input.text, fileData: fileInfo, result: output.result };
   } catch (error) {
     throw new ApiError(2003, error.message);
   }
@@ -202,6 +205,16 @@ const inputServe = async (text, file) => {
   }
 };
 
+const fileQuery = async (filePath) => {
+  let fileData;
+  if(filePath !== "/uploads/undefined") {
+    fileData = fs.readFileSync(`.${filePath}`, 'utf-8');
+  } else {
+    fileData = "No File Uploaded for this Input";
+  }
+  return fileData;
+};
+
 /**
  * Query for inputs
  * @param {Object} filter - Mongo filter
@@ -220,6 +233,7 @@ const queryInputs = async (filter, options) => {
     await PublishEvent(RegisteredTopics.ALL_INPUTS, fetchedInputs);
     return fetchedInputs;
   } catch (error) {
+    console.log(error)
     throw new ApiError(1010, error.message);
   }
 };
@@ -232,8 +246,9 @@ const queryInputs = async (filter, options) => {
 const getInputByUUID = async (uuid) => {
   try {
     return await redisHelper(`input/${uuid}`, async () => {
-      const input = Input.find({ id: uuid }, { projection: { _id: 0 } });
-      return input;
+      const input = await Input.find({ id: uuid }, { projection: { _id: 0 } });
+      const fileData = await fileQuery(input[0].file_path);
+      return { inputTitle: input[0].text, filePath: input[0].file_path, fileData: fileData };
     });
   } catch (error) {
     throw new ApiError(1012, error.message);
@@ -271,8 +286,9 @@ const queryOutputs = async (filter, options) => {
 const getOutputByUUID = async (uuid) => {
   try {
     return await redisHelper(`input/${uuid}`, async () => {
-      const output = Output.find({ id: uuid }).populate('ref_id');
-      return output;
+      const output = await Output.find({ id: uuid }).populate('ref_id');
+      const fileData = await fileQuery(output[0].ref_id.file_path);
+      return { resultType: output[0].type, inputTitle: output[0].ref_id.text, fileData: fileData, result: output[0].result };
     });
   } catch (error) {
     throw new ApiError(1013, error.message);
