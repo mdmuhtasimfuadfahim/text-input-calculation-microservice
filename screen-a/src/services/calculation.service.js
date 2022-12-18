@@ -155,7 +155,7 @@ const txtInputCalculation = async (data) => {
           output = await createOutput(input._id, 'File Data are not Valid', status[2]);
           throw new ApiError(1001, output.result);
         } else {
-          output = await calculateOutput(input._id, fileData, 1000);
+          output = await calculateOutput(input._id, fileData, 15000);
         }
       } else {
         output = await createOutput(input._id, 'Only .txt files are allowed', status[2]);
@@ -163,7 +163,7 @@ const txtInputCalculation = async (data) => {
       }
     } else {
       input = await createInput(data.text);
-      output = await calculateOutput(input._id, '', 1000);
+      output = await calculateOutput(input._id, '', 15000);
     }
     const fileInfo = fs.readFileSync(`.${input.file_path}`, 'utf-8');
     await PublishEvent(RegisteredTopics.CALCULATION_RESULT, { inputTitle: input.text, fileData: fileInfo, result: output.result });
