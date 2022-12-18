@@ -43,6 +43,66 @@ const console = require('console');
   }
 };
 
+/**
+ * Create numberic
+ * @param {String} str // string nummeric value
+ * @returns {<ConertedNumbericValue>}
+ */
+const createNumberic = (str) => {
+  try {
+    if (typeof str != "string") return false;
+    return parseFloat(str);
+  } catch (error) {
+    throw new ApiError(3003, error.message);
+  }
+};
+
+
+/**
+ * Calculation operation
+ * @param {String} data // what is written in the file
+ * @returns {<Result>}
+ */
+const calculation = async (data) => {
+  try {
+    var expression = data;
+    var copy = expression;
+  
+    expression = expression.replace(/[0-9]+/g, "#").replace(/[\(|\|\.)]/g, "");
+    var numbers = copy.split(/[^0-9\.]+/);
+    var operators = expression.split("#").filter(function(n){return n});
+    let result = 0;
+  
+    for (i = 0; i < operators.length; i++) {
+      let a; 
+      if(i === 0) {
+        a = createNumberic(numbers[i]);
+      } else {
+        a = result;
+      }
+      let op = operators[i];
+      let b = createNumberic(numbers[i + 1]);
+      switch (op) {
+        case "+": 
+          result = a + b
+          break;
+        case "*":
+          result = a * b
+          break;
+        case "-":
+          result = a - b
+          break;
+        case "/":
+          result = a / b
+          break;
+      }
+    }
+    return result;
+  } catch (error) {
+    throw new ApiError(3002, error.message);
+  }
+};
+
 
 /**
  * Create Output
@@ -60,8 +120,8 @@ const calculateOutput = async (id, data, ms) => {
       if(data === '') {
         calculationResult = '0';
       } else {
-        // calculation goes here
-        calculationResult = data;
+        const result = await calculation(data);
+        calculationResult = result;
       }
       end = new Date().getTime();
     }
@@ -94,7 +154,7 @@ const txtInputCalculation = async (data) => {
           output = await createOutput(input._id, 'File Data are not Valid', status[2]);
           throw new ApiError(1001, output.result);
         } else {
-          output = await calculateOutput(input._id, fileData, 3000);
+          output = await calculateOutput(input._id, fileData, 1000);
         }
       } else {
         output = await createOutput(input._id, 'Only .txt files are allowed', status[2]);
@@ -102,7 +162,7 @@ const txtInputCalculation = async (data) => {
       }
     } else {
       input = await createInput(data.text);
-      output = await calculateOutput(input._id, '', 3000);
+      output = await calculateOutput(input._id, '', 1000);
     }
     return { input: input.text, output: output.result };
   } catch (error) {

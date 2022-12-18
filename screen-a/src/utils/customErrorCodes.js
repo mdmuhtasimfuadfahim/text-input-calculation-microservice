@@ -13,5 +13,7 @@ const errorCode = {
     "2003": "TextInputCalculationError",
     "2004": "CalculateOutputError",
     "3001": "FileDataError",
+    "3002": "CalculationError",
+    "3003": "CreateNumericError",
 }
 module.exports = errorCode
