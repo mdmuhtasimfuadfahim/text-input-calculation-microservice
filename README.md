@@ -18,12 +18,12 @@ Now, users can submit their calculations anytime they want unlimitedly. In futur
 ## Endpoints:
  #### Screen-A APIs:
   * POST API: ```v1/calculation/inputs``` - it takes the inputs (written text is required and file is optional).
-    Here is it:
-  <img src="https://user-images.githubusercontent.com/69357704/208299532-99a3d8ec-5601-409b-97a0-95708448464b.png">
   * GET API: ```/v1/calculation/inputs``` - to fetch inputs using pagination (limit, page, sortBy).
   * GET API: ```/v1/calculation/outputs``` - to fetch outputs using pagination (limit, page, sortBy).
   * GET API: ```/v1/calculation/input/uuid``` - to fetch input by uuid.
   * GET API: ```/v1/calculation/output/uuid``` - to fetch output by uuid.
+  Here is the POST API input data:
+  <img src="https://user-images.githubusercontent.com/69357704/208299532-99a3d8ec-5601-409b-97a0-95708448464b.png">
   </br>
    #### Screen-B APIs:
   * GET API: ```/v1/result/input/uuid``` - to fetch input by uuid.
@@ -61,12 +61,10 @@ cp .env.example .env
   > Note: If you run concurrently from the root directory then both services and gatway will start. Also docker and redis-server will also start. Otherwise you have to go inside of each service and run the service including docker and redis-server.
 
   Example: 
-  ```
     cd screen-a
     npm run docker
     redis-server
     npm run start
-  ```
 ```
 
   
