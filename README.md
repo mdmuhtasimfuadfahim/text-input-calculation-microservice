@@ -22,10 +22,10 @@ Now, users can submit their calculations anytime they want unlimitedly. In futur
   * GET API: ```/v1/calculation/outputs``` - to fetch outputs using pagination (limit, page, sortBy).
   * GET API: ```/v1/calculation/input/uuid``` - to fetch input by uuid.
   * GET API: ```/v1/calculation/output/uuid``` - to fetch output by uuid.
-  </br>
-   #### Screen-B APIs:
+ #### Screen-B APIs:
   * GET API: ```/v1/result/input/uuid``` - to fetch input by uuid.
   * GET API: ```/v1/result/output/uuid``` - to fetch output by uuid.
+
   > Note: Screen-B is only for show data. It will contact will Screen-A by gateway which will run on port 3000 or ```http://localhost:3000```.
     Here is the POST API input data:
   <img src="https://user-images.githubusercontent.com/69357704/208299532-99a3d8ec-5601-409b-97a0-95708448464b.png">
@@ -42,7 +42,7 @@ https://github.com/mdmuhtasimfuadfahim/text-input-calculation-microservice
 ```
 
 **Step 2: Install the dependencies:** </br>
-  Please follow the commands of './run.sh' file and install the dependencies
+  Please follow the commands of ```./run.sh``` file and install the dependencies
   </br>
   
 **Step 3: Set the environment variables:** </br>
